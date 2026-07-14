@@ -260,6 +260,57 @@ app.get("/", (req, res) => {
   res.send("WhatsApp attendance bot is running.");
 });
 
+// מדיניות פרטיות (נדרשת ע"י Meta כדי לעבור למצב Live)
+app.get("/privacy", (req, res) => {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send(`<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>מדיניות פרטיות - בוט דיווח שעות עבודה | EDP Group</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #222; }
+    h1 { font-size: 22px; }
+    h2 { font-size: 18px; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h1>מדיניות פרטיות - בוט דיווח שעות עבודה</h1>
+  <p>עודכן לאחרונה: ${new Date().toLocaleDateString("he-IL")}</p>
+
+  <p>
+    שירות זה ("הבוט") הינו כלי פנימי של EDP Group המאפשר לעובדים לדווח שעות כניסה ויציאה
+    באמצעות הודעות WhatsApp, לצורך עדכון אוטומטי של מערכת ניהול שעות העבודה (Priority).
+  </p>
+
+  <h2>אילו נתונים נאספים</h2>
+  <p>
+    הבוט מעבד את מספר הטלפון של השולח, את תוכן ההודעה (למשל "כניסה" / "יציאה" ושעה),
+    ואת חותמת הזמן של ההודעה. נתונים אלו משמשים אך ורק לצורך זיהוי העובד ועדכון שעות
+    העבודה שלו במערכת הארגונית הפנימית.
+  </p>
+
+  <h2>כיצד נעשה שימוש בנתונים</h2>
+  <p>
+    הנתונים משמשים לזיהוי העובד מול מערכת הארגון, ולעדכון רישום שעות עבודה במערכת
+    Priority של החברה. הנתונים אינם נמכרים, משותפים או מועברים לגורמי צד שלישי מחוץ
+    למערכות הארגוניות הפנימיות של EDP Group.
+  </p>
+
+  <h2>שמירת נתונים</h2>
+  <p>
+    נתוני ההודעות אינם נשמרים על ידי הבוט מעבר לזמן הנדרש לביצוע העדכון במערכת. רישום
+    שעות העבודה עצמו נשמר במערכת הפנימית (Priority) בהתאם למדיניות שמירת הנתונים של החברה.
+  </p>
+
+  <h2>יצירת קשר</h2>
+  <p>
+    לשאלות בנוגע למדיניות פרטיות זו, ניתן לפנות לצוות ה-IT של EDP Group.
+  </p>
+</body>
+</html>`);
+});
+
 // אימות ה-Webhook מול Meta
 app.get("/webhook", (req, res) => {
   const mode = req.query["hub.mode"];
