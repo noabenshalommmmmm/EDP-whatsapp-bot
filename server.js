@@ -46,6 +46,24 @@ function basicAuthHeader(user, pass) {
 // ============================================================
 // עזרי תאריך/שעה (אזור זמן ישראל)
 // ============================================================
+// מחזיר את הפרשי השעות הנוכחי של ישראל מ-UTC בפורמט "+03:00" / "+02:00"
+// (משתנה לפי שעון קיץ/חורף, ולכן מחושב דינמית ולא קבוע בקוד)
+function getIsraelUtcOffset(date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Jerusalem",
+    timeZoneName: "shortOffset",
+  }).formatToParts(date);
+
+  const tzPart = parts.find((p) => p.type === "timeZoneName")?.value || "GMT+2";
+  const match = tzPart.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+  if (!match) return "+00:00";
+
+  const sign = match[1];
+  const hh = match[2].padStart(2, "0");
+  const mm = match[3] || "00";
+  return `${sign}${hh}:${mm}`;
+}
+
 function nowInIsrael() {
   const now = new Date();
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -64,6 +82,7 @@ function nowInIsrael() {
   return {
     date: `${map.year}-${map.month}-${map.day}`, // YYYY-MM-DD
     time: `${map.hour}:${map.minute}`, // HH:MM
+    utcOffset: getIsraelUtcOffset(now), // "+03:00" / "+02:00"
   };
 }
 
@@ -132,10 +151,10 @@ function isUserInactive(user) {
 // ============================================================
 // שלב 3: יצירת שורה ב-WORKHOURS (פריורטי)
 // ============================================================
-async function createWorkHoursRow({ userLogin, date, action, time }) {
+async function createWorkHoursRow({ userLogin, date, action, time, utcOffset }) {
   const payload = {
     USERLOGIN: userLogin,
-    WDATE: `${date}T00:00:00`,
+    WDATE: `${date}T00:00:00${utcOffset}`,
   };
 
   if (action === "checkin") {
@@ -216,7 +235,7 @@ async function handleAttendanceMessage(fromWaNumber, text) {
   }
 
   const localPhone = toLocalIsraeliNumber(fromWaNumber);
-  const { date, time: nowTime } = nowInIsrael();
+  const { date, time: nowTime, utcOffset } = nowInIsrael();
   const time = command.overrideTime || nowTime;
 
   try {
@@ -243,6 +262,7 @@ async function handleAttendanceMessage(fromWaNumber, text) {
       date,
       action: command.action,
       time,
+      utcOffset,
     });
 
     const successText = command.action === "checkin" ? "עודכן כניסה" : "עודכן יציאה";
